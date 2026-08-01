@@ -26,10 +26,15 @@ Both commands also work for items without PDF attachments. It does not yet suppo
 ## Development
 
 Fork and clone this repository
+
 Link this directory to your plugins directory: ln -sfn zotero-link-dev <your-test-vault>/.obsidian/plugins/obsidian-zotero
+
 npm install to install all dependencies
+
 npm run dev will run development server
+
 Reload your Obsidian
+
 
 ## License
 
