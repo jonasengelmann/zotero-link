@@ -1,43 +1,35 @@
 # Zotero Link
 
+This fork of [Zotero Link](https://github.com/vanakat/zotero-link) generates links in the same format Zotero uses when you paste copied annotations as plain text:
+
+`([Author, Year, p. 67](zotero://select/library/items/ITEM_KEY)) ([pdf](zotero://open-pdf/library/items/PDF_ID?page=12))`
+
+The page number in the first link corresponds to the PDF's page label, while the second corresponds to the actual page number.
+
 ## Prerequisites
 
 ### Zotero >= 7
 
 Enable Local API feature in settings: `Settings > Advanced > Allow other applications on this computer to communicate with Zotero`
 
-### Zotero <= 6
-
-Install Zotero addon [ZotServer](https://github.com/MunGell/ZotServer)
-
 ## Installation
 
-Install [zotero-bridge](https://github.com/vanakat/zotero-bridge) and this plugin from Obsidian Community Plugins settings screen.
+Install [zotero-bridge-fork](https://github.com/jonasengelmann/zotero-bridge)
 
-## Usage
+## Commands
 
-When this plugin installed it adds new command to the Command Palette: `Zotero Link: Insert`.
-You can add a keyboard shortcut for this command in Obsidian settings.
+- Insert Zotero Item: Search Zotero library and insert citation link
+- Insert Zotero Item PDF Page / Range: Search Zotero library and insert link with page or page range information. Enter page labels, they will be automatically resolved to the actual page numbers for the PDF link.
 
-Exact text of the link can be changed with template configuration in plugin settings.
+Both commands also work for items without PDF attachments. It does not yet support multiple PDF attachments per one Zotero item.
 
-Following keywords are acceptable in the template:
+## Development
 
-* `{{ key }}` – Zotero item key
-* `{{ title }}` – item title
-* `{{ shortTitle }}` – item short title
-* `{{ date.year }}` – publication year e.g. 2011
-* `{{ date.month }}` – publication month  e.g. 10
-* `{{ date.day }}` – publication day e.g. 31
-* `{{ firstAuthor.fullName }}` – first author's full name
-* `{{ firstAuthor.firstName }}` – first author's first name
-* `{{ firstAuthor.lastName }}` – first author's last name
-* `{% for author in authors %}{{ author.lastName}}, {{ author.firstName | first }}., {% endfor %}` – advanced use of template to output all authors
-
-Template language is based on [Nunjucks](https://mozilla.github.io/nunjucks/templating.html#builtin-filters),
-so its syntax and built-in filters are also available.
-
-There is also a good [video review and demonstration](https://www.youtube.com/watch?v=44vV7Tr484Q) of the plugin, made by Curtis McHale.
+Fork and clone this repository
+Link this directory to your plugins directory: ln -sfn zotero-link-dev <your-test-vault>/.obsidian/plugins/obsidian-zotero
+npm install to install all dependencies
+npm run dev will run development server
+Reload your Obsidian
 
 ## License
 

@@ -1,35 +1,56 @@
 {
-    "name": "zotero-link",
-    "version": "1.0.2",
-    "description": "Insert link to Zotero items from Obsidian interface using Zotero Bridge",
-    "main": "main.js",
-    "private": true,
-    "scripts": {
-        "dev": "node esbuild.config.mjs",
-        "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-        "version": "node version-bump.mjs && git add manifest.json versions.json"
-    },
-    "keywords": [
-        "obsidian",
-        "zotero",
-        "obsidian plugin"
-    ],
-    "author": "Shmavon Gazanchyan",
-    "license": "MIT",
-    "devDependencies": {
-        "@types/node": "^20.14.2",
-        "@types/nunjucks": "^3.2.1",
-        "@typescript-eslint/eslint-plugin": "^7.13.0",
-        "@typescript-eslint/parser": "^7.13.0",
-        "@vanakat/plugin-api": "^0.2.0",
-        "builtin-modules": "^4.0.0",
-        "esbuild": "0.21.5",
-        "nunjucks": "^3.2.3",
-        "obsidian": "latest",
-        "tslib": "2.6.3",
-        "typescript": "5.4.5"
-    },
-    "dependencies": {
-        "@vanakat/zotero-bridge": "^1.4.0"
-    }
+  "name": "zotero-link",
+  "version": "1.0.2",
+  "description": "Insert link to Zotero items from Obsidian interface using Zotero Bridge",
+  "main": "main.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "prepare": "husky",
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,css,md}": "prettier --write --ignore-unknown"
+  },
+  "keywords": [
+    "obsidian",
+    "zotero",
+    "obsidian plugin"
+  ],
+  "author": "Shmavon Gazanchyan",
+  "license": "MIT",
+  "prettier": {
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": false,
+    "printWidth": 90
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@types/nunjucks": "^3.2.1",
+    "@types/pdfjs-dist": "^2.10.377",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "@vanakat/plugin-api": "^0.2.0",
+    "builtin-modules": "^4.0.0",
+    "esbuild": "0.21.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "nunjucks": "^3.2.3",
+    "obsidian": "latest",
+    "prettier": "^3.9.6",
+    "tslib": "2.6.3",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@vanakat/zotero-bridge": "^1.4.0",
+    "pdfjs-dist": "^4.10.38",
+    "rollup": "^4.27.3"
+  }
 }
