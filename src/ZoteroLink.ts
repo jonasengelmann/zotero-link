@@ -1,4 +1,4 @@
-import { App, Editor, Modal, Plugin, Setting, Notice } from "obsidian"
+import { App, Editor, Modal, Plugin, Setting } from "obsidian"
 import { pluginApi } from "@vanakat/plugin-api"
 import { ZoteroItem as OriginalZoteroItem } from "@vanakat/zotero-bridge"
 import * as pdfjsLib from "pdfjs-dist"
@@ -21,7 +21,8 @@ interface ZoteroItem extends OriginalZoteroItem {
 }
 
 function formatShortName(item: ZoteroItem, startPage?: string, endPage?: string) {
-  let shortName = `${item.getCreatorSummary()}, ${item.getDate().year}`
+  const year = item.getDate()?.year ?? "n.d."
+  let shortName = `${item.getCreatorSummary()}, ${year}`
   if (startPage && endPage) {
     shortName += ", pp. " + startPage + "-" + endPage
   } else if (startPage) {
