@@ -3,7 +3,7 @@ import { pluginApi } from "@vanakat/plugin-api"
 import { ZoteroItem as OriginalZoteroItem } from "@vanakat/zotero-bridge"
 import * as pdfjsLib from "pdfjs-dist"
 import type { PDFDocumentProxy, getDocument } from "pdfjs-dist"
-import { readFileSync } from "fs"
+import { readFile } from "fs/promises"
 
 // @ts-ignore — resolved by the esbuild plugin above
 import pdfjsWorkerCode from "pdfjs-dist/build/pdf.worker.mjs"
@@ -64,7 +64,7 @@ async function getPdfPageMap(
   const pdfConfig: DocumentInitParameters = {}
 
   if (typeof pdfSource === "string") {
-    const fileBuffer = readFileSync(pdfSource)
+    const fileBuffer = await readFile(pdfSource)
     pdfConfig.data = new Uint8Array(fileBuffer)
   } else {
     pdfConfig.data = pdfSource
@@ -73,20 +73,25 @@ async function getPdfPageMap(
   const loadingTask = pdfjsLib.getDocument(pdfConfig)
   const pdfDocument: PDFDocumentProxy = await loadingTask.promise
 
-  const pageLabels: string[] | null = await pdfDocument.getPageLabels()
-  const labelToPhysicalMap = new Map<string, number>()
-  const totalPages: number = pdfDocument.numPages
+  try {
+    const pageLabels: string[] | null = await pdfDocument.getPageLabels()
+    const labelToPhysicalMap = new Map<string, number>()
+    const totalPages: number = pdfDocument.numPages
 
-  if (pageLabels && pageLabels.length > 0) {
-    pageLabels.forEach((label: string, index: number) => {
-      labelToPhysicalMap.set(label, index + 1)
-    })
-  } else {
-    for (let i = 1; i <= totalPages; i++) {
-      labelToPhysicalMap.set(i.toString(), i)
+    if (pageLabels && pageLabels.length > 0) {
+      pageLabels.forEach((label: string, index: number) => {
+        labelToPhysicalMap.set(label, index + 1)
+      })
+    } else {
+      for (let i = 1; i <= totalPages; i++) {
+        labelToPhysicalMap.set(i.toString(), i)
+      }
     }
+    return labelToPhysicalMap
+  } finally {
+    await pdfDocument.destroy()
+    loadingTask.destroy()
   }
-  return labelToPhysicalMap
 }
 
 export class ZoteroLink extends Plugin {
