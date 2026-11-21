@@ -18,10 +18,9 @@ Install [zotero-bridge-fork](https://github.com/jonasengelmann/zotero-bridge)
 
 ## Commands
 
-- Insert Zotero Item: Search Zotero library and insert citation link
-- Insert Zotero Item PDF Page / Range: Search Zotero library and insert link with page or page range information. Enter page labels, they will be automatically resolved to the actual page numbers for the PDF link.
-
-Both commands also work for items without PDF attachments. It does not yet support multiple PDF attachments per one Zotero item.
+- Insert Zotero Item: Search Zotero library and insert citation link labeled with author, title, and year
+- Insert Zotero Item (short): Search Zotero library and insert citation link labeled with author and year
+- Insert Zotero Item PDF Page / Range: Search Zotero library and insert link with page or page range information. Page labels, they will be automatically resolved to the actual page numbers for the linked PDF.
 
 ## Development
 

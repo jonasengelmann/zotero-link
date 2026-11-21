@@ -20,15 +20,29 @@ interface ZoteroItem extends OriginalZoteroItem {
   getPdfFilepath(): string
 }
 
-function formatShortName(item: ZoteroItem, startPage?: string, endPage?: string) {
+type ItemLabelFormat = "short" | "full"
+
+function formatItemLabel(
+  item: ZoteroItem,
+  labelFormat: ItemLabelFormat,
+  startPage?: string,
+  endPage?: string,
+) {
+  let label: string
   const year = item.getDate()?.year ?? "n.d."
-  let shortName = `${item.getCreatorSummary()}, ${year}`
-  if (startPage && endPage) {
-    shortName += ", pp. " + startPage + "–" + endPage
-  } else if (startPage) {
-    shortName += ", p. " + startPage
+  if (labelFormat === "full") {
+    const creator = item.getAuthor()?.lastName || item.getCreatorSummary()
+    label = [creator, `${item.getTitle()} (${year})`].filter((part) => part).join(" - ")
+  } else {
+    label = [item.getCreatorSummary(), year].filter((part) => part).join(", ")
   }
-  return `([${shortName}](zotero://select/library/items/${item.getKey()}))`
+
+  if (startPage && endPage) {
+    label += ", pp. " + startPage + "–" + endPage
+  } else if (startPage) {
+    label += ", p. " + startPage
+  }
+  return `([${label}](zotero://select/library/items/${item.getKey()}))`
 }
 
 function formatPdfLink(item: ZoteroItem, pageNumber?: string) {
@@ -44,18 +58,19 @@ function formatPdfLink(item: ZoteroItem, pageNumber?: string) {
 
 function formatItemLink(
   item: ZoteroItem,
+  labelFormat: ItemLabelFormat,
   startPage?: string,
   endPage?: string,
   startPdfPage?: string,
 ) {
-  const shortName = formatShortName(item, startPage, endPage)
+  const label = formatItemLabel(item, labelFormat, startPage, endPage)
   const pdfAttachmentId = item.getPdfAttachmentId()
 
   if (!pdfAttachmentId) {
-    return shortName
+    return label
   }
 
-  return `${shortName} ${formatPdfLink(item, startPdfPage)}`
+  return `${label} ${formatPdfLink(item, startPdfPage)}`
 }
 
 async function getPdfPageMap(
@@ -99,20 +114,20 @@ export class ZoteroLink extends Plugin {
     this.addCommand({
       id: "zotero-link-insert-item",
       name: "Insert Zotero Item",
-      editorCallback: async (editor: Editor) => {
-        pluginApi("ZoteroBridge")
-          .v1()
-          .search()
-          .then((item: ZoteroItem) => {
-            editor.replaceRange(formatItemLink(item), editor.getCursor())
-          })
-      },
+      editorCallback: (editor: Editor) => this.insertItemLink(editor, "full"),
+    })
+
+    this.addCommand({
+      id: "zotero-link-insert-item-short",
+      name: "Insert Zotero Item (short)",
+      editorCallback: (editor: Editor) => this.insertItemLink(editor, "short"),
     })
 
     this.addCommand({
       id: "zotero-link-insert-item-with-page-information",
       name: "Insert Zotero Item PDF Page / Range",
       editorCallback: async (editor: Editor) => {
+        const cursor = editor.getCursor()
         pluginApi("ZoteroBridge")
           .v1()
           .search()
@@ -133,37 +148,52 @@ export class ZoteroLink extends Plugin {
               }
             }
 
-            new PageRangeModal(this.app, warningMessage, map, (startPage, endPage) => {
-              if (!startPage) return
+            new PageRangeModal(
+              this.app,
+              warningMessage,
+              map,
+              (startPage, endPage, labelFormat) => {
+                if (!startPage) return
 
-              const startPdfPage = map
-                ? String(map.get(startPage) ?? startPage)
-                : startPage
+                const startPdfPage = map
+                  ? String(map.get(startPage) ?? startPage)
+                  : startPage
 
-              editor.replaceRange(
-                formatItemLink(item, startPage, endPage, startPdfPage),
-                editor.getCursor(),
-              )
-            }).open()
+                editor.replaceRange(
+                  formatItemLink(item, labelFormat, startPage, endPage, startPdfPage),
+                  cursor,
+                )
+              },
+            ).open()
           })
       },
     })
+  }
+
+  private insertItemLink(editor: Editor, labelFormat: ItemLabelFormat) {
+    pluginApi("ZoteroBridge")
+      .v1()
+      .search()
+      .then((item: ZoteroItem) => {
+        editor.replaceRange(formatItemLink(item, labelFormat), editor.getCursor())
+      })
   }
 }
 
 export class PageRangeModal extends Modal {
   startPage: string = ""
   endPage: string = ""
+  labelFormat: ItemLabelFormat = "short"
   warningMessage: string | null = null
   pageMap: Map<string, number> | null = null
   errorEl: HTMLElement | null = null
-  onSubmit: (startPage: string, endPage: string) => void
+  onSubmit: (startPage: string, endPage: string, labelFormat: ItemLabelFormat) => void
 
   constructor(
     app: App,
     warningMessage: string | null,
     pageMap: Map<string, number> | null,
-    onSubmit: (startPage: string, endPage: string) => void,
+    onSubmit: (startPage: string, endPage: string, labelFormat: ItemLabelFormat) => void,
   ) {
     super(app)
     this.warningMessage = warningMessage
@@ -210,6 +240,19 @@ export class PageRangeModal extends Modal {
         }),
       )
 
+    new Setting(contentEl)
+      .setName("Label Format")
+      .setDesc("Short: author, year. Full: author - title (year).")
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("short", "Short")
+          .addOption("full", "Full")
+          .setValue(this.labelFormat)
+          .onChange((value) => {
+            this.labelFormat = value as ItemLabelFormat
+          }),
+      )
+
     new Setting(contentEl).addButton((btn) =>
       btn
         .setButtonText("Submit")
@@ -222,6 +265,7 @@ export class PageRangeModal extends Modal {
     this.scope.register([], "Enter", (evt: KeyboardEvent) => {
       if (evt.isComposing) return
       this.submit()
+      return false
     })
   }
 
@@ -274,7 +318,7 @@ export class PageRangeModal extends Modal {
     }
 
     this.close()
-    this.onSubmit(this.startPage, this.endPage)
+    this.onSubmit(this.startPage, this.endPage, this.labelFormat)
   }
 
   onClose() {
