@@ -24,7 +24,7 @@ function formatShortName(item: ZoteroItem, startPage?: string, endPage?: string)
   const year = item.getDate()?.year ?? "n.d."
   let shortName = `${item.getCreatorSummary()}, ${year}`
   if (startPage && endPage) {
-    shortName += ", pp. " + startPage + "-" + endPage
+    shortName += ", pp. " + startPage + "–" + endPage
   } else if (startPage) {
     shortName += ", p. " + startPage
   }
